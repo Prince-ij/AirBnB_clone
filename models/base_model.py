@@ -7,13 +7,24 @@ class BaseModel:
     """ Base class for other models with common
         attributes and methods """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """ Initializes a new instance for BaseModel
             class """
 
-        self.id = str(uuid.uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+        tform = "%Y-%m-%dT%H:%M:%S.%f"
+
+        if len(kwargs):
+            for k, v in kwargs.item():
+                if k == '__class__':
+                    continue
+                elif k == 'created_at' or k == 'updated_at':
+                    setattr(self, k, datetime.strptime(v, tform))
+                else:
+                    setattr(self, k, v)
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.today()
+            self.updated_at = datetime.today()
 
     def __str__(self):
         """ Returns a string representation
