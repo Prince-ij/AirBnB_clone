@@ -19,6 +19,8 @@ class BaseModel:
                     continue
                 elif k == 'created_at' or k == 'updated_at':
                     setattr(self, k, datetime.strptime(v, tform))
+                elif k == 'id':
+                    setattr(self, k, str(v))
                 else:
                     setattr(self, k, v)
         else:
