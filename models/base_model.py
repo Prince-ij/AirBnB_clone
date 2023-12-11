@@ -1,56 +1,53 @@
-#!/usr/bin/env python3
-import uuid
+#!/usr/bin/python3
+"""Defines the BaseModel class."""
+import models
+from uuid import uuid4
 from datetime import datetime
-from models import storage
 
 
 class BaseModel:
-    """ Base class for other models with common
-        attributes and methods """
+    """Represents the BaseModel of the HBnB project."""
+
+    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
     def __init__(self, *args, **kwargs):
-        """ Initializes a new instance for BaseModel
-            class """
+        """Initialize a new BaseModel.
 
-        tform = "%Y-%m-%dT%H:%M:%S.%f"
-
-        if len(kwargs):
-            for k, v in kwargs.item():
-                if k == '__class__':
-                    continue
-                elif k == 'created_at' or k == 'updated_at':
-                    setattr(self, k, datetime.strptime(v, tform))
-                elif k == 'id':
-                    setattr(self, k, str(v))
-                else:
-                    setattr(self, k, v)
-        else:
-            self.id = str(uuid.uuid4())
-            self.created_at = datetime.today()
-            self.updated_at = datetime.today()
-
-    def __str__(self):
-        """ Returns a string representation
-            of the object """
-
-        class_name = self.__class__.__name__
-        return f"[{class_name}] ({self.id}) {self.__dict__}"
+        Args:
+            *args (any): Unused.
+            **kwargs (dict): Key/value pairs of attributes.
+        """
+        self.id = str(uuid4())
+        self.created_at = datetime.today()
+        self.updated_at = datetime.today()
+        self.deserialize(kwargs)  # Use a helper method for deserialization
 
     def save(self):
-        """ updates updated_at with current datetime """
-
+        """Update updated_at with the current datetime."""
         self.updated_at = datetime.today()
-        storage.new(self)
-        storage.save()
+        models.storage.save()
 
     def to_dict(self):
-        """ returns a dictionary of the
-            objects attributes for serialization,
-            converts created_at and updated_at
-            into iso- format """
+        """Return the dictionary of the BaseModel instance.
 
-        obj_dict = self.__dict__.copy()
-        obj_dict['__class__'] = self.__class__.__name__
-        obj_dict['created_at'] = self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
-        obj_dict['updated_at'] = self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%f")
-        return obj_dict
+        Includes the key/value pair __class__ representing
+        the class name of the object.
+        """
+        return {
+            "id": self.id,
+            "created_at": self.created_at.strftime(self.DATE_FORMAT),
+            "updated_at": self.updated_at.strftime(self.DATE_FORMAT),
+            "__class__": self.__class__.__name__,
+        }
+
+    def deserialize(self, kwargs):
+        """Deserialize key/value pairs in kwargs and set attributes."""
+        for key, value in kwargs.items():
+            if key == "created_at" or key == "updated_at":
+                setattr(self, key, datetime.strptime(value, self.DATE_FORMAT))
+            else:
+                setattr(self, key, value)
+
+    def __str__(self):
+        """Return the print/str representation of the BaseModel instance."""
+        return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
