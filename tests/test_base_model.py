@@ -5,11 +5,11 @@ Unittest for Base Model class
 import unittest
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                '..')))
 
-from models.base_model import BaseModel  # noqa
-from datetime import datetime  # noqa
+sys.path.insert(0, '/AirBnB_clone/models')
+from base_model import BaseModel # noqa
+from datetime import datetime # noqa
+from __init__ import storage # noqa
 
 
 class TestBaseModel(unittest.TestCase):
@@ -60,6 +60,33 @@ class TestBaseModel(unittest.TestCase):
                          my_model.created_at.isoformat())
         self.assertEqual(my_model_dict['updated_at'],
                          my_model.updated_at.isoformat())
+
+    def test_recreate_instance_from_dict(self):
+        """
+        Recreate Instance from dictionary
+        """
+
+        my_model = BaseModel()
+        my_model.name = 'My_First_Model'
+        my_model.my_number = 89
+        my_model.save()
+
+        my_model_dict = my_model.to_dict()
+
+        my_new_model = BaseModel(**my_model_dict)
+
+        # check if attributes match
+        self.assertEqual(my_model.id, my_new_model.id)
+        self.assertEqual(my_model.name, my_new_model.name)
+        self.assertEqual(my_model.my_number, my_new_model.my_number)
+
+        # check if created_at & updated_at are datetime objects
+        self.assertIsInstance(my_new_model.created_at, datetime)
+        self.assertIsInstance(my_new_model.updated_at, datetime)
+
+        # next we check if they match
+        self.assertEqual(my_model.created_at, my_new_model.created_at)
+        self.assertEqual(my_model.updated_at, my_new_model.updated_at)
 
 
 if __name__ == '__main__':
